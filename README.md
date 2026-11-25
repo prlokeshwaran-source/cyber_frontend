@@ -1,70 +1,68 @@
-# Getting Started with Create React App
+# Northstar Banking Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React with JavaScript and JSX, built with Vite, for the banking API described in the project requirements.
 
-## Available Scripts
+## Run locally
 
-In the project directory, you can run:
+1. Start the backend at `http://localhost:8080`.
+2. Run `npm install` once.
+3. Run `npm run dev` and open the URL printed by Vite.
 
-### `npm start`
+Vite proxies `/api` requests to `http://localhost:8080` by default. To use another local backend, create `.env.local` with:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```env
+VITE_BACKEND_URL=http://localhost:8080
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+For deployment without a same-origin reverse proxy, set `VITE_API_BASE_URL` to the configured backend origin, for example `https://bank-api.example.com`. The Authorization header is attached only to API requests made to that configured origin. Restart Vite after changing local environment variables; deployment values are applied at build time.
 
-### `npm test`
+## Project structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```text
+banking-frontend/
+|-- public/
+|-- src/
+|   |-- assets/
+|   |   |-- images/
+|   |   `-- icons/
+|   |-- components/
+|   |   |-- common/
+|   |   |   |-- Button.jsx
+|   |   |   |-- ErrorMessage.jsx
+|   |   |   |-- Input.jsx
+|   |   |   `-- Loader.jsx
+|   |   |-- navbar/Navbar.jsx
+|   |   `-- sidebar/Sidebar.jsx
+|   |-- pages/
+|   |   |-- auth/Login.jsx, Register.jsx
+|   |   |-- dashboard/Dashboard.jsx
+|   |   |-- account/Account.jsx, AccountList.jsx, Balance.jsx, CreateAccount.jsx
+|   |   `-- transaction/Transfer.jsx
+|   |-- services/api.js, authService.js, accountService.js, transactionService.js
+|   |-- context/AuthContext.jsx
+|   |-- hooks/useAuth.js, useApi.js
+|   |-- routes/AppRoutes.jsx, ProtectedRoute.jsx
+|   |-- utils/validation.js, formatCurrency.js
+|   |-- App.jsx
+|   |-- main.jsx
+|   `-- index.css
+|-- .env.example
+|-- package.json
+`-- vite.config.js
+```
 
-### `npm run build`
+Pages contain screen behavior, services contain backend requests, and common components are shared across screens. Empty asset folders are ready for project images and icons.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Implemented API calls
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `POST /api/v1/auth/register`
+- `GET /api/v1/accounts` for credential validation and account listing
+- `POST /api/v1/accounts`
+- `GET /api/v1/accounts/{accountId}`
+- `POST /api/v1/transactions/transfers`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Credentials are held in React memory only and cleared when signing out or reloading the page. There is no deposit, withdrawal, transaction history, or backend logout endpoint in the current API. New accounts start at zero and need to be funded through a test fixture before they can send a successful transfer.
 
-### `npm run eject`
+OTP, deposit, withdrawal, transaction history, phishing checks, and security events are not included because the current API reference does not define those endpoints.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The backend must accept the Vite development origin through its CORS policy only if you bypass the Vite proxy. When using the proxy, the browser calls Vite on the same origin and Vite forwards `/api` requests to the backend.

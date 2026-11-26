@@ -6,6 +6,7 @@ import { SUPPORTED_CURRENCIES } from '../../utils/validation';
 
 export function CreateAccount({ credentials, onAccountCreated }) {
   const [currency, setCurrency] = useState('INR');
+  const [initialAmount, setInitialAmount] = useState('0.00');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,10 +15,15 @@ export function CreateAccount({ credentials, onAccountCreated }) {
     event.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
+    const amount = Number(initialAmount);
+    if (!Number.isFinite(amount) || amount < 0 || !/^\d{1,17}(\.\d{1,2})?$/.test(initialAmount)) {
+      setErrorMessage('Enter an initial amount of 0 or more, with up to two decimal places.');
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await createAccount({ currency }, credentials);
-      setSuccessMessage(`${currency} account created.`);
+      await createAccount({ currency, initialAmount: amount }, credentials);
+      setSuccessMessage(`${currency} account created with an initial amount of ${amount.toFixed(2)}.`);
       await onAccountCreated();
     } catch (error) {
       setErrorMessage(error.message);
@@ -33,6 +39,18 @@ export function CreateAccount({ credentials, onAccountCreated }) {
           <select id="new-account-currency" value={currency} onChange={(event) => setCurrency(event.target.value)}>
             {SUPPORTED_CURRENCIES.map((supportedCurrency) => <option key={supportedCurrency}>{supportedCurrency}</option>)}
           </select>
+        </div>
+        <div><label htmlFor="new-account-initial-amount">Initial amount</label>
+          <input
+            id="new-account-initial-amount"
+            type="number"
+            min="0"
+            max="99999999999999999.99"
+            step="0.01"
+            value={initialAmount}
+            onChange={(event) => setInitialAmount(event.target.value)}
+            required
+          />
         </div>
         <Button className="secondary-button" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creating…' : '＋ Create account'}

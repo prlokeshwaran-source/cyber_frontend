@@ -8,6 +8,7 @@ import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { getAccounts } from '../../services/accountService';
 import { createTransfer } from '../../services/transactionService';
+import { signCustomerTransaction } from '../../services/customerSigningService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { isDifferentAccount, isPositiveAmount } from '../../utils/validation';
 
@@ -69,13 +70,21 @@ export function Transfer() {
 
     setIsSubmitting(true);
     try {
+      if (!window.confirm(`Authorize transfer of ${transferRequest.amount} ${sourceAccount.currency} to account ${transferRequest.destinationAccountId}?`)) return;
       // Reuse the key when retrying the same request after an uncertain failure.
       // A changed form gets a new key from its change handler below.
       idempotencyKey.current ??= crypto.randomUUID();
+      const signing = await signCustomerTransaction(credentials, {
+        type: 'TRANSFER', sourceAccountId: transferRequest.sourceAccountId,
+        destinationAccountId: transferRequest.destinationAccountId.trim(),
+        amount: transferRequest.amount, currency: sourceAccount.currency,
+        operationId: idempotencyKey.current,
+      });
       const transferResult = await createTransfer({
         ...transferRequest,
-        amount: Number(transferRequest.amount),
+        amount: transferRequest.amount,
         destinationAccountId: transferRequest.destinationAccountId.trim(),
+        ...signing,
       }, credentials, idempotencyKey.current);
       idempotencyKey.current = null;
       setSuccessMessage(`Transfer ${transferResult.transactionId} completed successfully.`);

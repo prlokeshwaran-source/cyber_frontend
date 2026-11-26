@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { createAccount } from '../../services/accountService';
+import { signCustomerTransaction } from '../../services/customerSigningService';
 import { SUPPORTED_CURRENCIES } from '../../utils/validation';
 
 export function CreateAccount({ credentials, onAccountCreated }) {
@@ -22,7 +23,17 @@ export function CreateAccount({ credentials, onAccountCreated }) {
     }
     setIsSubmitting(true);
     try {
-      await createAccount({ currency, initialAmount: amount }, credentials);
+      const request = { currency, initialAmount: initialAmount };
+      if (amount > 0) {
+        if (!window.confirm(`Authorize opening this ${currency} account with an initial deposit of ${initialAmount}?`)) return;
+        const signingNonce = crypto.randomUUID();
+        const signing = await signCustomerTransaction(credentials, {
+          type: 'OPENING_DEPOSIT', sourceAccountId: null, destinationAccountId: null,
+          amount: initialAmount, currency, operationId: signingNonce,
+        });
+        Object.assign(request, signing, { signingNonce });
+      }
+      await createAccount(request, credentials);
       setSuccessMessage(`${currency} account created with an initial amount of ${amount.toFixed(2)}.`);
       await onAccountCreated();
     } catch (error) {

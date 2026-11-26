@@ -98,7 +98,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-result h2 { margin: 0; font: 700 22px Manrope, sans-serif; }
 .risk-result p, .risk-result li, .risk-result small { color: var(--muted); font-size: 12px; line-height: 1.6; }
 .risk-high, .risk-critical { border-color: #FECACA; background: #FEF3F2; }
+.risk-medium { border-color: #FEDF89; background: #FFFAEB; }
 .risk-low { border-color: #A6F4C5; background: #ECFDF3; }
+.risk-alert-banner { margin: 0 0 16px !important; padding: 12px; border: 1px solid #FDA29B; border-radius: 6px; color: #B42318 !important; background: #FEE4E2; font-weight: 800; }
+.security-tabs { display: flex; gap: 8px; margin: 16px 0; }
+.security-tab { padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: white; cursor: pointer; }
+.security-tab.active { border-color: var(--secondary); color: var(--secondary); background: #EFF8FF; font-weight: 700; }
+.transfer-panel textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font: inherit; resize: vertical; }
 @keyframes rise-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes status-pulse { 0%, 100% { box-shadow: 0 0 0 3px #12B76A22; } 50% { box-shadow: 0 0 0 6px #12B76A12; } }
 @keyframes spin { to { transform: rotate(360deg); } }

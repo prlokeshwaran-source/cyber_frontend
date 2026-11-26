@@ -46,6 +46,7 @@ export function Transfer() {
   }, [refreshAccounts, navigate, signOut]);
 
   const sourceAccount = accounts.find((account) => account.accountId === transferRequest.sourceAccountId);
+  const destinationAccounts = accounts.filter((account) => account.accountId !== transferRequest.sourceAccountId);
   const isSameAccount = transferRequest.destinationAccountId.trim() !== ''
     && !isDifferentAccount(transferRequest.sourceAccountId, transferRequest.destinationAccountId);
   const isValidAmount = isPositiveAmount(transferRequest.amount);
@@ -103,11 +104,20 @@ export function Transfer() {
                 </option>
               ))}
             </select>
-            <label htmlFor="destination-account">Destination account ID</label>
-            <input id="destination-account" type="text" autoComplete="off" placeholder="Paste destination account ID" required
+            <label htmlFor="destination-account">To account</label>
+            <select id="destination-account" required value={transferRequest.destinationAccountId}
               value={transferRequest.destinationAccountId}
-              onChange={(event) => setTransferRequest({ ...transferRequest, destinationAccountId: event.target.value })} />
-            {isSameAccount && <p className="field-error" role="alert">Choose a different account for the destination.</p>}
+              onChange={(event) => setTransferRequest({ ...transferRequest, destinationAccountId: event.target.value })}
+              disabled={destinationAccounts.length === 0}>
+              <option value="" disabled>Select a destination account</option>
+              {destinationAccounts.map((account) => (
+                <option key={account.accountId} value={account.accountId}>
+                  {account.accountId} ({account.currency})
+                </option>
+              ))}
+            </select>
+            {accountsError ? <p className="field-error" role="alert">Destination accounts could not be loaded. Please try again later.</p>
+              : destinationAccounts.length === 0 && <p className="field-hint">You need another account before you can make a transfer.</p>}
             <label htmlFor="transfer-amount">Amount{sourceAccount ? ` (${sourceAccount.currency})` : ''}</label>
             <input id="transfer-amount" type="number" min="0.01" step="0.01" required placeholder="0.00"
               value={transferRequest.amount}

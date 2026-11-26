@@ -96,7 +96,11 @@ export function Transfer() {
             {successMessage && <p className="success-inline" role="status">{successMessage}</p>}
             <label htmlFor="source-account">From account</label>
             <select id="source-account" required value={transferRequest.sourceAccountId}
-              onChange={(event) => setTransferRequest({ ...transferRequest, sourceAccountId: event.target.value })}>
+              onChange={(event) => setTransferRequest({
+                ...transferRequest,
+                sourceAccountId: event.target.value,
+                destinationAccountId: '',
+              })}>
               <option value="" disabled>Select a source account</option>
               {accounts.map((account) => (
                 <option key={account.accountId} value={account.accountId}>
@@ -106,7 +110,6 @@ export function Transfer() {
             </select>
             <label htmlFor="destination-account">To account</label>
             <select id="destination-account" required value={transferRequest.destinationAccountId}
-              value={transferRequest.destinationAccountId}
               onChange={(event) => setTransferRequest({ ...transferRequest, destinationAccountId: event.target.value })}
               disabled={destinationAccounts.length === 0}>
               <option value="" disabled>Select a destination account</option>

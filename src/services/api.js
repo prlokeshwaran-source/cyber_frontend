@@ -1,4 +1,15 @@
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? '';
+const DEVICE_ID_KEY = 'northstar.deviceId';
+
+function getDeviceId() {
+  let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+  if (!deviceId) {
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    deviceId = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(DEVICE_ID_KEY, deviceId);
+  }
+  return deviceId;
+}
 
 /** @param {{ email: string, password: string }} credentials */
 function encodeBasicCredentials(credentials) {
@@ -11,6 +22,7 @@ function encodeBasicCredentials(credentials) {
 }
 
 function getErrorMessage(problem, status) {
+  if (problem?.error) return problem.error;
   if (problem?.detail) return problem.detail;
   if (problem?.title) return problem.title;
   return `Request failed with status ${status}.`;
@@ -19,7 +31,7 @@ function getErrorMessage(problem, status) {
 /**
  * Send a request to the configured banking API.
  * @param {string} path
- * @param {{ method?: 'GET' | 'POST', credentials?: { email: string, password: string }, body?: unknown }} [options]
+ * @param {{ method?: 'GET' | 'POST', credentials?: { email: string, password: string }, body?: unknown, headers?: HeadersInit }} [options]
  */
 export async function apiRequest(path, options = {}) {
   const requestHeaders = new Headers({
@@ -32,6 +44,11 @@ export async function apiRequest(path, options = {}) {
 
   if (options.credentials) {
     requestHeaders.set('Authorization', `Basic ${encodeBasicCredentials(options.credentials)}`);
+    requestHeaders.set('X-Device-Id', getDeviceId());
+  }
+
+  if (options.headers) {
+    new Headers(options.headers).forEach((value, name) => requestHeaders.set(name, value));
   }
 
   let response;

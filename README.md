@@ -60,9 +60,16 @@ Pages contain screen behavior, services contain backend requests, and common com
 - `POST /api/v1/accounts`
 - `GET /api/v1/accounts/{accountId}`
 - `POST /api/v1/transactions/transfers`
+- `POST /api/v1/auth/device-approvals`
+- `POST /api/v1/transactions/deposits`
+- `POST /api/v1/transactions/withdrawals`
+- `GET /api/v1/transactions`
+- `POST /api/v1/security/url-checks`
 
-Credentials are held in React memory only and cleared when signing out or reloading the page. There is no deposit, withdrawal, transaction history, or backend logout endpoint in the current API. New accounts start at zero and need to be funded through a test fixture before they can send a successful transfer.
+Transfer requests include an `Idempotency-Key` header. The frontend keeps the same key when retrying an unchanged transfer after an uncertain failure, and creates a new key when the form changes. The backend must persist each key with the authenticated user and request result, reject reuse with a different payload, and create the transfer and idempotency record atomically. It should return the original result for a repeated key. Without those backend guarantees, the header alone cannot prevent duplicate transfers.
 
-OTP, deposit, withdrawal, transaction history, phishing checks, and security events are not included because the current API reference does not define those endpoints.
+Credentials are held in React memory only and cleared when signing out or reloading the page. The device ID is generated once from 32 random bytes and stored in local storage so it remains stable for this browser. A new-device `403` can be resolved at `/device-approval` with the challenge ID and code sent by email. Deposits are a demo balance credit only; the backend does not connect them to a funding provider. URL risk results are heuristic and do not guarantee safety.
+
+The client includes the device approval, demo deposit, withdrawal, transaction history, and URL risk check endpoints defined by the supplied API reference. SMTP delivery and device challenge generation are backend responsibilities.
 
 The backend must accept the Vite development origin through its CORS policy only if you bypass the Vite proxy. When using the proxy, the browser calls Vite on the same origin and Vite forwards `/api` requests to the backend.

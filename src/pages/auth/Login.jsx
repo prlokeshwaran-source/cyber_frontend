@@ -39,6 +39,7 @@ export function Login() {
       <p className="form-description">Use your registered email and password.</p>
       {registrationNotice && <p className="success-inline" role="status">{registrationNotice}</p>}
       {errorMessage && <ErrorMessage message={errorMessage} />}
+      {errorMessage.toLowerCase().includes('device approval required') && <p className="field-hint">Check your registered email for the challenge ID and code, then <Link to="/device-approval">approve this device</Link>. Retry sign in after approval.</p>}
       <Input id="login-email" label="Email address" type="email" autoComplete="username" required value={credentials.email}
         onChange={(event) => setCredentials({ ...credentials, email: event.target.value })} />
       <Input id="login-password" label="Password" type="password" autoComplete="current-password" required value={credentials.password}

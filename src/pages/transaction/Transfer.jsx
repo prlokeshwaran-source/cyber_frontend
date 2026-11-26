@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
@@ -24,6 +24,7 @@ export function Transfer() {
   const [formError, setFormError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const idempotencyKey = useRef(null);
 
   const refreshAccounts = useCallback(async () => {
     const accountList = await execute(getAccounts, credentials);
@@ -68,11 +69,15 @@ export function Transfer() {
 
     setIsSubmitting(true);
     try {
+      // Reuse the key when retrying the same request after an uncertain failure.
+      // A changed form gets a new key from its change handler below.
+      idempotencyKey.current ??= crypto.randomUUID();
       const transferResult = await createTransfer({
         ...transferRequest,
         amount: Number(transferRequest.amount),
         destinationAccountId: transferRequest.destinationAccountId.trim(),
-      }, credentials);
+      }, credentials, idempotencyKey.current);
+      idempotencyKey.current = null;
       setSuccessMessage(`Transfer ${transferResult.transactionId} completed successfully.`);
       setTransferRequest((currentRequest) => ({ ...currentRequest, destinationAccountId: '', amount: '' }));
       await refreshAccounts();
@@ -96,11 +101,14 @@ export function Transfer() {
             {successMessage && <p className="success-inline" role="status">{successMessage}</p>}
             <label htmlFor="source-account">From account</label>
             <select id="source-account" required value={transferRequest.sourceAccountId}
-              onChange={(event) => setTransferRequest({
-                ...transferRequest,
-                sourceAccountId: event.target.value,
-                destinationAccountId: '',
-              })}>
+              onChange={(event) => {
+                idempotencyKey.current = null;
+                setTransferRequest({
+                  ...transferRequest,
+                  sourceAccountId: event.target.value,
+                  destinationAccountId: '',
+                });
+              }}>
               <option value="" disabled>Select a source account</option>
               {accounts.map((account) => (
                 <option key={account.accountId} value={account.accountId}>
@@ -110,7 +118,10 @@ export function Transfer() {
             </select>
             <label htmlFor="destination-account">To account</label>
             <select id="destination-account" required value={transferRequest.destinationAccountId}
-              onChange={(event) => setTransferRequest({ ...transferRequest, destinationAccountId: event.target.value })}
+              onChange={(event) => {
+                idempotencyKey.current = null;
+                setTransferRequest({ ...transferRequest, destinationAccountId: event.target.value });
+              }}
               disabled={destinationAccounts.length === 0}>
               <option value="" disabled>Select a destination account</option>
               {destinationAccounts.map((account) => (
@@ -124,7 +135,10 @@ export function Transfer() {
             <label htmlFor="transfer-amount">Amount{sourceAccount ? ` (${sourceAccount.currency})` : ''}</label>
             <input id="transfer-amount" type="number" min="0.01" step="0.01" required placeholder="0.00"
               value={transferRequest.amount}
-              onChange={(event) => setTransferRequest({ ...transferRequest, amount: event.target.value })} />
+              onChange={(event) => {
+                idempotencyKey.current = null;
+                setTransferRequest({ ...transferRequest, amount: event.target.value });
+              }} />
             <p className="field-hint">Both accounts must use the same currency. The server checks available funds.</p>
             <Button type="submit" disabled={!canSubmit}>
               {isSubmitting ? 'Processing transfer...' : 'Transfer'} <span aria-hidden="true">→</span>

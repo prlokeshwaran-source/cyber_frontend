@@ -46,10 +46,7 @@ export function Dashboard() {
           <AccountList accounts={accounts} isLoading={isLoading} />
           <CreateAccount credentials={credentials} onAccountCreated={refreshAccounts} />
         </div>
-        <aside className="funding-note">
-          <span className="info-icon">i</span>
-          <p><strong>Account funding</strong> The backend doesn’t provide deposits or withdrawals. Newly created accounts start at zero; transfers require an account funded through a test fixture.</p>
-        </aside>
+        <p className="field-hint">Use Activity for demo deposits, withdrawals, and transaction history.</p>
       </section>
     </div>
   );

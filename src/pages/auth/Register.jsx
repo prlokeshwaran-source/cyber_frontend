@@ -34,12 +34,12 @@ export function Register() {
       {errorMessage && <ErrorMessage message={errorMessage} />}
       <Input id="register-email" label="Email address" type="email" autoComplete="email" required value={credentials.email}
         onChange={(event) => setCredentials({ ...credentials, email: event.target.value })} />
-      <Input id="register-password" label="Password" type="password" autoComplete="new-password" minLength={6} required value={credentials.password}
+      <Input id="register-password" label="Password" type="password" autoComplete="new-password" minLength={12} maxLength={72} required value={credentials.password}
         onChange={(event) => setCredentials({ ...credentials, password: event.target.value })} />
-      <p className={`field-hint password-checker ${credentials.password.length >= 6 ? 'password-checker-valid' : ''}`} aria-live="polite">
-        {credentials.password.length >= 6
-          ? 'Password meets the 6-character minimum.'
-          : `${credentials.password.length}/6 characters minimum`}
+      <p className={`field-hint password-checker ${credentials.password.length >= 12 && credentials.password.length <= 72 ? 'password-checker-valid' : ''}`} aria-live="polite">
+        {credentials.password.length >= 12 && credentials.password.length <= 72
+          ? 'Password meets the 12–72 character requirement.'
+          : `${credentials.password.length}/12 characters minimum (72 maximum)`}
       </p>
       <Button className="form-submit" type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Creating profile…' : 'Create profile'} <span aria-hidden="true">→</span>
